@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, Response, request
 import slack
 import os
 from dotenv import load_dotenv
@@ -11,7 +11,6 @@ load_dotenv(dotenv_path=env_path)
 app = Flask(__name__)
 slack_event_adapter = SlackEventAdapter(
     os.environ["SIGNING_SECRET"], "/slack/events", app)
-
 
 client = slack.WebClient(token=os.environ["SLACK_TOKEN"])
 BOT_ID = client.api_call("auth.test")["user_id"]
@@ -30,6 +29,14 @@ def message(payload):
     # print('=====')
     if BOT_ID != user_id:
         client.chat_postMessage(channel=channel_id, text=text)
+
+
+@app.route("/demo-command", methods=["POST"])
+def demo_command():
+    data = request.form
+    channel_id = data.get('channel_id')
+    client.chat_postMessage(channel=channel_id, text="/demo-command 成功!")
+    return Response(), 200
 
 
 if __name__ == "__main__":
