@@ -15,6 +15,8 @@ slack_event_adapter = SlackEventAdapter(
 client = slack.WebClient(token=os.environ["SLACK_TOKEN"])
 BOT_ID = client.api_call("auth.test")["user_id"]
 
+message_counts = {}
+
 @slack_event_adapter.on("message")
 def message(payload):
     event = payload.get("event", {})
@@ -22,22 +24,28 @@ def message(payload):
     user_id = event.get("user")
     text = event.get("text")
     # print('=====')
-    # print(event)
-    # print(channel_id)
-    # print(user_id)
-    # print(text)
+    # print(payload)
     # print('=====')
     if BOT_ID != user_id:
+        if user_id in message_counts:
+            message_counts[user_id] += 1
+        else:
+            message_counts[user_id] = 1
+        
         client.chat_postMessage(channel=channel_id, text=text)
 
 
-@app.route("/demo-command", methods=["POST"])
-def demo_command():
+@app.route("/demo-message-count", methods=["POST"])
+def demo_message_count():
     data = request.form
+    user_id = data.get('user_id')
     channel_id = data.get('channel_id')
-    client.chat_postMessage(channel=channel_id, text="/demo-command 成功!")
+    message_count = message_counts.get(user_id, 0)
+
+    client.chat_postMessage(
+        channel=channel_id, text=f"/demo-message-count 成功!\nMessage: {message_count}")
     return Response(), 200
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=3000)
+    app.run(debug=True, port=3001)
