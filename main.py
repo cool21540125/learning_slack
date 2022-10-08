@@ -57,9 +57,9 @@ class WelcomeMessage:
     def _get_reaction_task(self):
         checkmark = ':white_check_mark:'
         if not self.completed:
-            checkmark = '💣'
+            checkmark = ':white_large_square:'
 
-        text = f'{checkmark} *可用 emoji*'
+        text = f'{checkmark} *Is Reply*'
 
         return {'type': 'section', 'text': {'type': 'mrkdwn', 'text': text}}
 
